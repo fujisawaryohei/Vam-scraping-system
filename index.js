@@ -1,32 +1,27 @@
 const fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
-
-// If modifying these scopes, delete token.json.
+//このスコープを変更する場合は、token.jsonを削除する。
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
-// The file token.json stores the user's access and refresh tokens, and is
-// created automatically when the authorization flow completes for the first
-// time.
-const TOKEN_PATH = 'token.json';
+//token.jsonにはユーザーのアクセストークンとリフレッシュトークンが格納される。
 
-// Load client secrets from a local file.
+//最初の認証フローが完了したら自動的に作成される。
+const TOKEN_PATH = 'token.json';
+//ローカルファイルからクライアントシークレットをロードする。
 fs.readFile('credentials.json', (err, content) => {
   if (err) return console.log('Error loading client secret file:', err);
-  // Authorize a client with credentials, then call the Google Sheets API.
-  authorize(JSON.parse(content), listMajors);
+  // credentials.jsonでGoogle sheets APIを呼び出すクライアント認証を行う。
+  authorize(JSON.parse(content), getData);
 });
 
-/**
- * Create an OAuth2 client with the given credentials, and then execute the
- * given callback function.
- * @param {Object} credentials The authorization client credentials.
- * @param {function} callback The callback to call with the authorized client.
- */
+//指定された資格情報を使用してOauth2クライアントを作成し、
+ //* @param {Object} 認証クライアントの資格情報。
+ //* @param {function} 許可されたクライアントとコールバック関数。
+
 function authorize(credentials, callback) {
   const {client_secret, client_id, redirect_uris} = credentials.installed;
   const oAuth2Client = new google.auth.OAuth2(
       client_id, client_secret, redirect_uris[0]);
-
   // Check if we have previously stored a token.
   fs.readFile(TOKEN_PATH, (err, token) => {
     if (err) return getNewToken(oAuth2Client, callback);
@@ -35,12 +30,10 @@ function authorize(credentials, callback) {
   });
 }
 
-/**
- * Get and store new token after prompting for user authorization, and then
- * execute the given callback with the authorized OAuth2 client.
- * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
- * @param {getEventsCallback} callback The callback for the authorized client.
- */
+//ユーザー認証のアウトプット後に新しいトークンを取得して保存する。
+//許可されたOauth2クライアントで指定のコールバックを実行する。
+// @params {google.auth.OAuth2}
+// @params {getEventsCallback}
 function getNewToken(oAuth2Client, callback) {
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
@@ -66,28 +59,39 @@ function getNewToken(oAuth2Client, callback) {
   });
 }
 
-/**
- * Prints the names and majors of students in a sample spreadsheet:
- * @see https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
- * @param {google.auth.OAuth2} auth The authenticated Google OAuth client.
- */
-function listMajors(auth) {
-  const sheets = google.sheets({version: 'v4', auth});
+
+const sheetId = '1mVsqgJCIQJYbdajxG2m7O4nW-5Zz0nghx7SxKm-ssq0'
+
+
+function getData(auth,sheetId) {
+  const sheets = google.sheets({version: 'v4', auth})
   sheets.spreadsheets.values.get({
-    spreadsheetId: '1mVsqgJCIQJYbdajxG2m7O4nW-5Zz0nghx7SxKm-ssq0',
+    spreadsheetId: sheetId,
     range: 'C20:B40',
   }, (err, res) => {
-    if (err) return console.log('The API returned an error: ' + err);
+    if (err) return console.log('APIが以下の理由でエラー:' + err);
     const rows = res.data.values;
     console.log(rows);
     if (rows.length) {
-      console.log('Name, Major:');
-      // Print columns A and E, which correspond to indices 0 and 4.
-      //rows.map((row) => {
-        //console.log(`${row[0]}, ${row[4]}`);
-      //});
+      console.log('success!');
     } else {
       console.log('No data found.');
+    }
+  });
+}
+
+function dataAppend(auth,sheetId,arr){
+  let values = arr;
+  let valuesHash = {values};
+  sheets.spreadsheets.values.append({
+    spreadsheetId: sheetId,
+    range:'C20:B40',
+    resources:valueHash
+  },(err,res)=>{
+    if(err){
+       return console.log('APIが以下の理由でエラー:' + err);
+    } else {
+      console.log(`${res.updates.updatedCells}を追加しました。`);
     }
   });
 }
