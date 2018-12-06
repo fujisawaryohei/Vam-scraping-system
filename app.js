@@ -22,47 +22,54 @@ app.listen(3000,function(){
   console.log("Listening on 3000");
 });
 
-const start = '<tr bgcolor="#ffffff">';
-
-const singlehtmlTag = ['<td width="100" align="center">','</br>','<td width="50" align="center">','<td width="160">','<td width="120" align="center">',];
-
-const closeTag = ['<br/>','</td>','</td>','<br/>','<br/>'];
-
-const url = 'https://ipoget.com/ipodiary/%E3%82%BD%E3%83%95%E3%83%88%E3%83%90%E3%83%B3%E3%82%AF%EF%BC%889434%EF%BC%89ipo%EF%BC%88%E6%96%B0%E8%A6%8F%E4%B8%8A%E5%A0%B4%EF%BC%89%E3%81%AB%E5%BD%93%E9%81%B8%E3%81%99%E3%82%8B%E3%81%9F%E3%82%81/'
+const url = 'http://www.miller.co.jp/applications/cgi-bin/cv0/rnk20/01/cv0rnk20c.cgi?_hps=off&id=4'
+const start = '<td class="tLeft rkgSelected01">';
 
 const dom = client.fetch(url);
 
+//新高値銘柄
 dom.then((result)=>{
-  const count = (result.body.match(new RegExp(start,"g"))||[]).length;//この回数分繰り返す。
-  singleData(result);
-  doubleData(result);
+  var body = result.body;
+  var count = (body.match(new RegExp(start,"g")))||[].length;
+  var startIndex = body.indexOf(start);
+  var closeTag = body.indexOf('</a>',startIndex);
+  var href = '<a href="/chart.cgi?????TB" target="_chart">';
+  console.log(body.substring(startIndex + href.length + start.length,closeTag));
+  });
+
+//市場・業種
+dom.then((result)=>{
+  let body = result.body;
+  let count = (body.match(new RegExp(start,"g")))||[].length;
+  let startIndex = body.indexOf(start);
+  let htmlTag = '<td class="tLeft ">';
+  let htmlIndex =   body.indexOf(htmlTag,startIndex);
+  let closeTag = ['<br />','</td>']
+  let closeIndex1 = body.indexOf(closeTag[0],htmlIndex);
+  let closeIndex2 = body.indexOf(closeTag[1],closeIndex1);
+   console.log(body.substring(htmlIndex + htmlTag.length , closeIndex1));
+   console.log(body.substring(htmlIndex + htmlTag.length + closeTag[1].length + closeTag[0].length-1 , closeIndex2));
 });
 
-//普通のデータをとるときの文字列処理
-//forEachで回す
-const singleData = (result)=>{ //配列
-  let html = result.body;
-  let startIndex = html.indexOf(start);//16570
-  //ここの第2引数にfinal_countで</tr>のindexを受け渡す。
-  let dayHtml=singlehtmlTag[i];
-  let dayIndex = html.indexOf(dayHtml,startIndex);
-  let closeTagIndex = html.indexOf(closeTag[i],dayIndex);
-  console.log(html.substring(dayIndex+dayHtml.length,closeTagIndex));
-  console.log(html.substring(dayIndex+day));
-};
+//終値
+dom.then((result)=>{
+  let body = result.body;
+  let count = (body.match(new RegExp(start,"g")))||[].length;
+  let startIndex1 = body.indexOf(start);
+  let htmlTag1 = '<td class="tRight " >';
+  let htmlTag2 = '<strong>';
+  let htmlIndex1 = body.indexOf(htmlTag1,startIndex1);
+  let htmlIndex2 = body.indexOf(htmlTag2,htmlIndex1);
+  let closeTagIndex1 = body.indexOf('<span',htmlIndex1);
+  let closeTagIndex2 = body.indexOf('</strong>',htmlIndex2);
+   let updown = body.substring(htmlIndex2 + htmlTag2.length,closeTagIndex2);
+    console.log(body.substring(htmlIndex1 + htmlTag1.length,closeTagIndex1)+updown);
+ // 前日比
+ //出来高(千株)は後で
+});
 
-//hrefタグの文字列処理
-//forEachで回す
-const stockName = (result)=>{
-  let html = result.body;
-  let startIndex = html.indexOf(start);
-  let hrefHtml = '<a href=';
-  let hrefIndex = html.indexOf(hrefHtml,startIndex);
-  let closeTagIndex = html.indexOf('</a>',hrefIndex);
-  let href = '<a href="https://ipoget.com/?p=qqqqq" target="_blank">';
-  console.log(html.substring(hrefIndex+href.length,closeTagIndex));
-}
 
+console.log();
 app.use(function(req, res, next) {
   next(createError(404));
 });
