@@ -19,18 +19,29 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.listen(3000,function(){
-  console.log("Listening on 3000");
+  console.log("Listening on 3000-------------------------------");
 });
 
-const url = 'http://www.miller.co.jp/applications/cgi-bin/cv0/rnk20/01/cv0rnk20c.cgi?_hps=off&id=4'
-const start = '<td class="tLeft rkgSelected01">';
+var url = 'http://www.miller.co.jp/applications/cgi-bin/cv0/rnk20/01/cv0rnk20c.cgi?_hps=off&id=4'
+var start = '<td class="tLeft rkgSelected01">';
+var dom = client.fetch(url);
 
-const dom = client.fetch(url);
+var count;
+dom.then((result)=>{
+  var body = result.body;
+  var count = (body.match(new RegExp(start,"g"))||[]).length;
+  for(i=1;i <= count; i++){
+    var htmlTag = `<td class="">${i}</td>`;
+    var startIndex = body.indexOf(htmlTag);
+    var closeIndex = body.indexOf('</tr>',startIndex);
+    var sortBody = body.substring(startIndex,closeIndex);
+    arr = sortBody.split(htmlTag);
+  }
+});
 
 //新高値銘柄
 dom.then((result)=>{
   var body = result.body;
-  var count = (body.match(new RegExp(start,"g")))||[].length;
   var startIndex = body.indexOf(start);
   var closeTag = body.indexOf('</a>',startIndex);
   var href = '<a href="/chart.cgi?????TB" target="_chart">';
@@ -40,7 +51,6 @@ dom.then((result)=>{
 //市場・業種
 dom.then((result)=>{
   let body = result.body;
-  let count = (body.match(new RegExp(start,"g")))||[].length;
   let startIndex = body.indexOf(start);
   let htmlTag = '<td class="tLeft ">';
   let htmlIndex =   body.indexOf(htmlTag,startIndex);
@@ -54,7 +64,6 @@ dom.then((result)=>{
 //終値
 dom.then((result)=>{
   let body = result.body;
-  let count = (body.match(new RegExp(start,"g")))||[].length;
   let startIndex1 = body.indexOf(start);
   let htmlTag1 = '<td class="tRight " >';
   let htmlTag2 = '<strong>';
