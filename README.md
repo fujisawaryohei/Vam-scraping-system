@@ -1,7 +1,7 @@
 # Vam-scraping-system
 scraping system for my working.[WIP]
 
-#scraping API server
+# scraping API server
 
 ```
  GET /stockName
