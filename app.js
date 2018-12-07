@@ -22,34 +22,42 @@ app.listen(3000,function(){
   console.log("Listening on 3000-------------------------------");
 });
 
+//スクレイピングに必要な情報の定義
 var url = 'http://www.miller.co.jp/applications/cgi-bin/cv0/rnk20/01/cv0rnk20c.cgi?_hps=off&id=4';
+var start = '<td class="tLeft rkgSelected01">';
+var arrayBody = new Array;
+var sortBody = new Array;
 
-var arr = new Array;
 
-var stockNameArray = function(link,callback) {
+//新高値銘柄名のレスポンス
+function stockNameArray(link) {
   var dom = client.fetch(link);
     dom.then((res)=>{
       var body = res.body;
-      var start = '<td class="tLeft rkgSelected01">';
       var count = (body.match(new RegExp(start,"g"))||[]).length;
-        for(i=1;i <= count; i++) {
+        for(i=1;i <= count;i++) {
           var htmlTag = `<td class="">${i}</td>`;
           var startIndex = body.indexOf(htmlTag);
           var closeIndex = body.indexOf('</tr>',startIndex);
           var sortBody = body.substring(startIndex,closeIndex);
-          var arrayBody = sortBody.split(htmlTag);
-          returnArray(arrayBody); //ここで新高値銘柄等の抽出処理を呼び出す。
+          arrayBody = sortBody.split(htmlTag);
         }
+       extractName(arrayBody); //ここで新高値銘柄等の抽出処理を呼び出す。
     });
 }
 
+stockNameArray(url);
 
-stockNamesdArray(url,returnArray(arr));
-
-function returnArray(body){
-  console.log(body);
+//新高値銘柄抽出
+function extractName(arrayBody){
+  //要素の塊が配列になっているので、それを処理するところから
+  var startIndex = arrayBody.indexOf(start);
+  console.log(startIndex);
+  var closeTag = body.indexOf('</a>',startIndex);
+  var href = '<a href="/chart.cgi?????TB" target="_chart">';
+  console.log(body.substring(startIndex + href.length + start.length, closeTag));
 }
-//新高値銘柄
+
  // dom.then((result)=>{
  //   var body = result.body;
  //   var startIndex = body.indexOf(start);
