@@ -7,6 +7,7 @@ var client = require('cheerio-httpcli');
 var request = require('request-promise');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var highPrice = require('./highPrice'); //ファイルモジュール呼び出し
 var app = express();
 const {google} = require('googleapis');
 //app.set('views', path.join(__dirname, 'views'));
@@ -26,77 +27,69 @@ app.listen(3000,function(){
 var url = 'http://www.miller.co.jp/applications/cgi-bin/cv0/rnk20/01/cv0rnk20c.cgi?_hps=off&id=4';
 var start = '<td class="tLeft rkgSelected01">';
 var arrayBody = new Array;
-var sortBody = new Array;
+var htmlBody = new String;
+var stockArray = new Array;
 
-
-//新高値銘柄名のレスポンス
-function stockNameArray(link) {
+//stockArrayは銘柄HTML要素の配列を返す //第2引数では、抽出処理している関数を渡す
+function stockNameArray(link,callback) {
   var dom = client.fetch(link);
     dom.then((res)=>{
       var body = res.body;
       var count = (body.match(new RegExp(start,"g"))||[]).length;
-        for(i=1;i <= count;i++) {
+        for(var i=1;i <= count;i++) {
           var htmlTag = `<td class="">${i}</td>`;
           var startIndex = body.indexOf(htmlTag);
           var closeIndex = body.indexOf('</tr>',startIndex);
-          var sortBody = body.substring(startIndex,closeIndex);
-          arrayBody = sortBody.split(htmlTag);
+          htmlBody = body.substring(startIndex,closeIndex);
+          stockArray.push(htmlBody); //stockArrayが銘柄の配列.
         }
-       extractName(arrayBody); //ここで新高値銘柄等の抽出処理を呼び出す。
+        callback(stockArray);
     });
 }
 
-stockNameArray(url);
-
-//新高値銘柄抽出
-function extractName(arrayBody){
-  //要素の塊が配列になっているので、それを処理するところから
-  var startIndex = arrayBody.indexOf(start);
-  console.log(startIndex);
-  var closeTag = body.indexOf('</a>',startIndex);
-  var href = '<a href="/chart.cgi?????TB" target="_chart">';
-  console.log(body.substring(startIndex + href.length + start.length, closeTag));
+//新高値銘柄と銘柄コード抽出
+function extractName(array){
+  for(var arr of array){
+    var startIndex = arr.indexOf(start);
+    var closeTag = arr.indexOf('</a>',startIndex);
+    var href = '<a href="/chart.cgi?????TB" target="_chart">';
+    var result = arr.substring(start.length + startIndex + href.length, closeTag)
+    console.log(result);
+  }
 }
 
- // dom.then((result)=>{
- //   var body = result.body;
- //   var startIndex = body.indexOf(start);
- //   var closeTag = body.indexOf('</a>',startIndex);
- //   var href = '<a href="/chart.cgi?????TB" target="_chart">';
- //   console.log(body.substring(startIndex + href.length + start.length,closeTag));
- //   });
+//市場と業種の取得
+function extractMarket(array){
+  for(var arr of array){
+    var startIndex = arr.indexOf(start);
+    var htmlTag = '<td class="tLeft ">';
+    var htmlIndex = arr.indexOf(htmlTag,startIndex);
+    var closeTag = ['<br />','</td>']
+    var closeIndex1 = arr.indexOf(closeTag[0],htmlIndex);
+    var closeIndex2 = arr.indexOf(closeTag[1],closeIndex1);
+    console.log(arr.substring(htmlIndex + htmlTag.length , closeIndex1));     console.log(arr.substring(htmlIndex + htmlTag.length + closeTag[1].length + closeTag[0].length - 1 , closeIndex2));
+  }
+}
 
-//市場・業種
-//  dom.then((result)=>{
-//    let body = result.body;
-//    let startIndex = body.indexOf(start);
-//    let htmlTag = '<td class="tLeft ">';
-//    let htmlIndex =   body.indexOf(htmlTag,startIndex);
-//    let closeTag = ['<br />','</td>']
-//    let closeIndex1 = body.indexOf(closeTag[0],htmlIndex);
-//    let closeIndex2 = body.indexOf(closeTag[1],closeIndex1);
-//     console.log(body.substring(htmlIndex + htmlTag.length , closeIndex1));
-//     console.log(body.substring(htmlIndex + htmlTag.length + closeTag[1].length + closeTag[0].length-1 , closeIndex2));
-//  });
+//終値を取得
+function extractFinalBalance(array){
+  for(var arr of array){
+    var startIndex1 = arr.indexOf(start);
+    var htmlTag1 = '<td class="tRight " >';
+    var htmlTag2 = '<strong>';
+    var htmlIndex1 = arr.indexOf(htmlTag1,startIndex1);
+    var htmlIndex2 = arr.indexOf(htmlTag2,htmlIndex1);
+    var closeTagIndex1 = arr.indexOf('<span',htmlIndex1);
+    var closeTagIndex2 = arr.indexOf('</strong>',htmlIndex2);
+     var updown = arr.substring(htmlIndex2 + htmlTag2.length,closeTagIndex2);
+     console.log(arr.substring(htmlIndex1 + htmlTag1.length,closeTagIndex1)+updown);
+  }
+}
 
-// //終値
-//  dom.then((result)=>{
-//    let body = result.body;
-//    let startIndex1 = body.indexOf(start);
-//    let htmlTag1 = '<td class="tRight " >';
-//    let htmlTag2 = '<strong>';
-//    let htmlIndex1 = body.indexOf(htmlTag1,startIndex1);
-//    let htmlIndex2 = body.indexOf(htmlTag2,htmlIndex1);
-//    let closeTagIndex1 = body.indexOf('<span',htmlIndex1);
-//    let closeTagIndex2 = body.indexOf('</strong>',htmlIndex2);
-//     let updown = body.substring(htmlIndex2 + htmlTag2.length,closeTagIndex2);
-//      console.log(body.substring(htmlIndex1 + htmlTag1.length,closeTagIndex1)+updown);
-//  });
-
-// //  // 前日比
+// 前日比
 
 
-// //  //出来高(千株)は後で
+// 出来高(千株)は後で
 
 
 console.log();
