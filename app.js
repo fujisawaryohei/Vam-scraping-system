@@ -20,6 +20,7 @@ app.listen(3000,function(){
   console.log("Listening on 3000-------------------------------");
 });
 
+
 app.get('/',(req,res)=>{
   res.send("これは新高値銘柄の情報を返すJSON APIです。")
 });
@@ -36,7 +37,7 @@ app.get('/marketandkind',(req,res)=>{
   });
 });
 
-app.get('/finalBalance',(req,res)=>{
+app.get('/finalbalance',(req,res)=>{
   highPrice.stockNameArray(highPrice.url,highPrice.extractFinalBalance).then(value=>{
     res.send(value);
   });

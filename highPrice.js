@@ -4,10 +4,10 @@ module.exports.url = 'http://www.miller.co.jp/applications/cgi-bin/cv0/rnk20/01/
 var start = '<td class="tLeft rkgSelected01">';
 var arrayBody = new Array;
 var htmlBody = new String;
-var stockArray = new Array;
 
 //stockArrayは銘柄HTML要素の配列を返す //第2引数では、抽出処理している関数を渡す
 exports.stockNameArray = function(link,callback) {
+  var stockArray = [];
   return new Promise(resolve=>{
     var dom = client.fetch(link);
       dom.then((res)=>{
@@ -35,8 +35,8 @@ exports.extractName = function(array) {
     var result = arr.substring(start.length + startIndex + href.length, closeTag);
     results.push(result);
   }
-   console.log(results);
-   return JSON.stringify({name:results})
+   console.log(JSON.stringify({name:results}));
+   return JSON.stringify({name:results});
 }
 
 
@@ -57,6 +57,7 @@ exports.extractMarket = function(array){
       marketKinds.push(resultKind);
     // console.log(arr.substring(htmlIndex + htmlTag.length , closeIndex1));     console.log(arr.substring(htmlIndex + htmlTag.length + closeTag[1].length + closeTag[0].length - 1 , closeIndex2));
   }
+  console.log(JSON.stringify({market:marketResults,kind:marketKinds}));
   return JSON.stringify({market:marketResults,kind:marketKinds});
 }
 
@@ -64,18 +65,51 @@ exports.extractMarket = function(array){
 exports.extractFinalBalance = function(array){
   var resutlsFinalBalance = [];
   for(var arr of array){
+    //stockNameArrayで取得した株式情報の塊を処理する。
     var startIndex1 = arr.indexOf(start);
-    var htmlTag1 = '<td class="tRight " >';
-    var htmlTag2 = '<strong>';
-    var htmlIndex1 = arr.indexOf(htmlTag1,startIndex1);
-    var htmlIndex2 = arr.indexOf(htmlTag2,htmlIndex1);
-    var closeTagIndex1 = arr.indexOf('<span',htmlIndex1);
-    var closeTagIndex2 = arr.indexOf('</strong>',htmlIndex2);
-    var updown = arr.substring(htmlIndex2 + htmlTag2.length,closeTagIndex2);
-    // var resultFinalBalance = arr.substring(htmlIndex1 + htmlTag1.length,closeTagIndex1)+updown;
-    // resutlsFinalBalance.push(resultFinalBalance);
+      if (arr.match(/<span class="minus">/)){
+        //終値取得のための文字列処理
+        var htmlTag1 = '<td class="tRight " >';
+        var htmlIndex1 = arr.indexOf(htmlTag1,startIndex1);
+        var closeTagIndex1 = arr.indexOf('<span',htmlIndex1);
+        //矢印取得のための文字列処理
+        var htmlTag2 = '<strong>';
+        var htmlIndex2 = arr.indexOf(htmlTag2,htmlIndex1);
+        var closeTagIndex2 = arr.indexOf('</strong>',htmlIndex2);
+        //昨日に比べて終値が上か下か表示する矢印
+        var updown = arr.substring(htmlIndex2 + htmlTag2.length,closeTagIndex2);
+        var resultFinalBalance = arr.substring(htmlIndex1 + htmlTag1.length,closeTagIndex1)+updown;
+          //console.log(resultFinalBalance);
+          resutlsFinalBalance.push(resultFinalBalance);
+      } else if (arr.match(/<span class="plus">/)) {
+        //終値取得のための文字列処理
+          var htmlTag1 = '<td class="tRight " >';
+          var htmlIndex1 = arr.indexOf(htmlTag1,startIndex1);
+          var closeTagIndex1 = arr.indexOf('<span',htmlIndex1);
+        //矢印取得のための文字列処理
+          var htmlTag2 = '<strong>';
+          var htmlIndex2 = arr.indexOf(htmlTag2,htmlIndex1);
+          var closeTagIndex2 = arr.indexOf('</strong>',htmlIndex2);
+        //昨日に比べて終値が上か下か表示する矢印
+          var updown = arr.substring(htmlIndex2 + htmlTag2.length,closeTagIndex2);
+          var resultFinalBalance = arr.substring(htmlIndex1 + htmlTag1.length,closeTagIndex1)+updown;
+            //console.log(resultFinalBalance);
+          resutlsFinalBalance.push(resultFinalBalance);
+    } else {
+        var htmlTag1 = '<td class="tRight " >';
+        var htmlIndex1 = arr.indexOf(htmlTag1,startIndex1);
+        var htmlTag2 = '<strong>';
+        var htmlcloseTagIndex = arr.indexOf(htmlTag2,htmlIndex1);
+        var closeTag = '</strong>';
+        var closeTagIndex = arr.indexOf(closeTag,htmlcloseTagIndex);
+          var updown = arr.substring(htmlcloseTagIndex + htmlTag2.length,closeTagIndex);
+          var resultFinalBalance = arr.substring(htmlIndex1 + htmlTag1.length,htmlcloseTagIndex)+updown;
+            //console.log(resultFinalBalance);
+          resutlsFinalBalance.push(resultFinalBalance);
+    }
   }
-  console.log(arr.substring(htmlIndex1 + htmlTag1.length,closeTagIndex1)+updown);
+  console.log(JSON.stringify({finalBalance:resutlsFinalBalance}));
+  return JSON.stringify({finalBalance:resutlsFinalBalance});
 }
 
 // 前日比
