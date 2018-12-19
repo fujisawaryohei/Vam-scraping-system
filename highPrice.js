@@ -108,8 +108,8 @@ exports.extractFinalBalance = function(array){
           resutlsFinalBalance.push(resultFinalBalance);
     }
   }
-  console.log(JSON.stringify({finalBalance:resutlsFinalBalance}));
-  return JSON.stringify({finalBalance:resutlsFinalBalance});
+  console.log(JSON.stringify({finalvalue:resutlsFinalBalance}));
+  return JSON.stringify({finalvalue:resutlsFinalBalance});
 }
 
 // 前日比
