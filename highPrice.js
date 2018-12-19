@@ -22,11 +22,11 @@ exports.stockNameArray = function(link,callback) {
           }
           resolve(callback(stockArray));
       });
-  })
+  });
 }
 
-//新高値銘柄と銘柄コード抽出
-exports.extractName = function(array){
+//新高値銘柄と銘柄コード抽出 //関数をエクスポートする。
+exports.extractName = function(array) {
   var results = [];
   for(var arr of array){
     var startIndex = arr.indexOf(start);
@@ -35,12 +35,15 @@ exports.extractName = function(array){
     var result = arr.substring(start.length + startIndex + href.length, closeTag);
     results.push(result);
   }
+   console.log(results);
    return JSON.stringify({name:results})
-  }
+}
 
 
-//市場と業種の取得
+//市場と業種の取得 //関数をエクスポートする。
 exports.extractMarket = function(array){
+  var marketResults = [];
+  var marketKinds = [];
   for(var arr of array){
     var startIndex = arr.indexOf(start);
     var htmlTag = '<td class="tLeft ">';
@@ -48,12 +51,18 @@ exports.extractMarket = function(array){
     var closeTag = ['<br />','</td>']
     var closeIndex1 = arr.indexOf(closeTag[0],htmlIndex);
     var closeIndex2 = arr.indexOf(closeTag[1],closeIndex1);
-    console.log(arr.substring(htmlIndex + htmlTag.length , closeIndex1));     console.log(arr.substring(htmlIndex + htmlTag.length + closeTag[1].length + closeTag[0].length - 1 , closeIndex2));
+      var resultMarket = arr.substring(htmlIndex + htmlTag.length , closeIndex1);
+      var resultKind = arr.substring(htmlIndex + htmlTag.length + closeTag[1].length + closeTag[0].length - 1 , closeIndex2);
+      marketResults.push(resultMarket);
+      marketKinds.push(resultKind);
+    // console.log(arr.substring(htmlIndex + htmlTag.length , closeIndex1));     console.log(arr.substring(htmlIndex + htmlTag.length + closeTag[1].length + closeTag[0].length - 1 , closeIndex2));
   }
+  return JSON.stringify({market:marketResults,kind:marketKinds});
 }
 
-//終値を取得
+//終値を取得 //関数をexportsする
 exports.extractFinalBalance = function(array){
+  var resutlsFinalBalance = [];
   for(var arr of array){
     var startIndex1 = arr.indexOf(start);
     var htmlTag1 = '<td class="tRight " >';
@@ -62,9 +71,11 @@ exports.extractFinalBalance = function(array){
     var htmlIndex2 = arr.indexOf(htmlTag2,htmlIndex1);
     var closeTagIndex1 = arr.indexOf('<span',htmlIndex1);
     var closeTagIndex2 = arr.indexOf('</strong>',htmlIndex2);
-     var updown = arr.substring(htmlIndex2 + htmlTag2.length,closeTagIndex2);
-     console.log(arr.substring(htmlIndex1 + htmlTag1.length,closeTagIndex1)+updown);
+    var updown = arr.substring(htmlIndex2 + htmlTag2.length,closeTagIndex2);
+    // var resultFinalBalance = arr.substring(htmlIndex1 + htmlTag1.length,closeTagIndex1)+updown;
+    // resutlsFinalBalance.push(resultFinalBalance);
   }
+  console.log(arr.substring(htmlIndex1 + htmlTag1.length,closeTagIndex1)+updown);
 }
 
 // 前日比
