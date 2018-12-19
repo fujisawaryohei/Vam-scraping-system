@@ -37,7 +37,7 @@ app.get('/marketandkind',(req,res)=>{
   });
 });
 
-app.get('/finalbalance',(req,res)=>{
+app.get('/finalvalue',(req,res)=>{
   highPrice.stockNameArray(highPrice.url,highPrice.extractFinalBalance).then(value=>{
     res.send(value);
   });
