@@ -6,7 +6,7 @@ var logger = require('morgan');
 var request = require('request-promise');
 var apiRouter = require('./routes');
 var highPrice = require('./highPrice'); //ファイルモジュール呼び出し
-var PORT = 5000
+var PORT = process.env.PORT || 5000
 
 var app = express();
 app.set('views', path.join(__dirname, 'views'));
