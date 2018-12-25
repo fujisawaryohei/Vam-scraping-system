@@ -6,6 +6,7 @@ var logger = require('morgan');
 var request = require('request-promise');
 var apiRouter = require('./routes');
 var highPrice = require('./highPrice'); //ファイルモジュール呼び出し
+var PORT = 5000
 
 var app = express();
 app.set('views', path.join(__dirname, 'views'));
@@ -16,8 +17,8 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.listen(3000,function(){
-  console.log("Listening on 3000-------------------------------");
+app.listen(PORT,function(){
+  console.log(`Listening on ${PORT}`);
 });
 
 
